@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Crypto Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body>
+    <h2>BTC price chart</h2>
+
+    <canvas id="btcChart" width="600" height="300"></canvas>
+
+    <script>
+      const url =
+        "https://crypto-func-2115-h0edcdgdb9b4d0d2.germanywestcentral-01.azurewebsites.net/api/latest";
+
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          const items = data.BTC.items;
+
+          const labels = items.map((x) =>
+            new Date(x.createdAt).toLocaleTimeString(),
+          );
+          const prices = items.map((x) => x.price);
+
+          const ctx = document.getElementById("btcChart").getContext("2d");
+
+          new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "BTC price",
+                  data: prices,
+                  borderWidth: 2,
+                },
+              ],
+            },
+          });
+        });
+    </script>
+  </body>
+</html>
