@@ -4,12 +4,57 @@
     <meta charset="UTF-8" />
     <title>Crypto Monitor</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 30px;
+        background: #f5f7fb;
+      }
+
+      h1 {
+        margin-bottom: 30px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 14px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      }
+
+      .stats {
+        margin-top: 15px;
+        line-height: 1.8;
+      }
+
+      .label {
+        font-weight: bold;
+      }
+    </style>
   </head>
 
   <body>
-    <h2>BTC price chart</h2>
+    <h1>Crypto Monitor Dashboard</h1>
 
-    <canvas id="btcChart" width="600" height="300"></canvas>
+    <div class="grid">
+      <div class="card">
+        <h2>Bitcoin (BTC)</h2>
+        <canvas id="btcChart" height="220"></canvas>
+        <div class="stats" id="btcStats"></div>
+      </div>
+
+      <div class="card">
+        <h2>Ethereum (ETH)</h2>
+        <canvas id="ethChart" height="220"></canvas>
+        <div class="stats" id="ethStats"></div>
+      </div>
+    </div>
 
     <script>
       const url =
@@ -18,28 +63,86 @@
       fetch(url)
         .then((res) => res.json())
         .then((data) => {
-          const items = data.BTC.items;
+          const btcItems = data.BTC.items;
+          const ethItems = data.ETH.items;
 
-          const labels = items.map((x) =>
+          const btcLabels = btcItems.map((x) =>
             new Date(x.createdAt).toLocaleTimeString(),
           );
-          const prices = items.map((x) => x.price);
+          const btcPrices = btcItems.map((x) => x.price);
 
-          const ctx = document.getElementById("btcChart").getContext("2d");
+          const ethLabels = ethItems.map((x) =>
+            new Date(x.createdAt).toLocaleTimeString(),
+          );
+          const ethPrices = ethItems.map((x) => x.price);
 
-          new Chart(ctx, {
+          const btcCtx = document.getElementById("btcChart").getContext("2d");
+          const ethCtx = document.getElementById("ethChart").getContext("2d");
+
+          new Chart(btcCtx, {
             type: "line",
             data: {
-              labels: labels,
+              labels: btcLabels,
               datasets: [
                 {
-                  label: "BTC price",
-                  data: prices,
+                  label: "BTC price (USD)",
+                  data: btcPrices,
                   borderWidth: 2,
+                  tension: 0.3,
+                  fill: false,
                 },
               ],
             },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: true,
+                },
+              },
+            },
           });
+
+          new Chart(ethCtx, {
+            type: "line",
+            data: {
+              labels: ethLabels,
+              datasets: [
+                {
+                  label: "ETH price (USD)",
+                  data: ethPrices,
+                  borderWidth: 2,
+                  tension: 0.3,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: true,
+                },
+              },
+            },
+          });
+
+          document.getElementById("btcStats").innerHTML = `
+            <div><span class="label">Last price:</span> ${data.BTC.last_price} USD</div>
+            <div><span class="label">Average price:</span> ${data.BTC.avg_price} USD</div>
+            <div><span class="label">Trend:</span> ${data.BTC.trend}</div>
+            <div><span class="label">Measurements:</span> ${data.BTC.count}</div>
+          `;
+
+          document.getElementById("ethStats").innerHTML = `
+            <div><span class="label">Last price:</span> ${data.ETH.last_price} USD</div>
+            <div><span class="label">Average price:</span> ${data.ETH.avg_price} USD</div>
+            <div><span class="label">Trend:</span> ${data.ETH.trend}</div>
+            <div><span class="label">Measurements:</span> ${data.ETH.count}</div>
+          `;
+        })
+        .catch((error) => {
+          console.error("Error while loading data:", error);
         });
     </script>
   </body>
